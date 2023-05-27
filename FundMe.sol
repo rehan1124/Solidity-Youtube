@@ -6,6 +6,9 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract FundMe {
     uint256 public minimumUsd = 50 * 1e18;
 
+    address[] public funders;
+    mapping(address => uint256) addressToMoneyFunded;
+
     function getPrice() public view returns (uint256) {
         // Contract address: 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
@@ -30,5 +33,7 @@ contract FundMe {
             getConversionRate(msg.value) >= minimumUsd,
             "Minimum 50 USD is required."
         );
+        funders.push(msg.sender);
+        addressToMoneyFunded[msg.sender] = msg.value;
     }
 }
