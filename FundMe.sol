@@ -17,6 +17,32 @@ contract FundMe {
             "Minimum 50 USD is required."
         );
         funders.push(msg.sender);
-        addressToMoneyFunded[msg.sender] = msg.value;
+        addressToMoneyFunded[msg.sender] += msg.value;
+    }
+
+    function withdraw() public payable {
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < funders.length;
+            funderIndex += 1
+        ) {
+            address funder = funders[funderIndex];
+            addressToMoneyFunded[funder] = 0;
+        }
+
+        funders = new address[](0);
+
+        // Using transfer()
+        // payable(msg.sender).transfer(address(this).balance);
+
+        // Using send()
+        bool sendStatus = payable(msg.sender).send(address(this).balance);
+        require(sendStatus, "Withdrawal failed.");
+
+        // Using call()
+        (bool isWithdrawalSuccess, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
+        require(isWithdrawalSuccess, "Withdrawal failed.");
     }
 }
