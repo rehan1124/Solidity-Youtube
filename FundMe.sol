@@ -4,12 +4,30 @@ pragma solidity 0.8.16;
 import "contracts/PriceConverter.sol";
 
 contract FundMe {
+    // --- State variables ---
     using PriceConverter for uint256;
 
     uint256 public minimumUsd = 50 * 1e18;
 
     address[] public funders;
     mapping(address => uint256) addressToMoneyFunded;
+
+    address public owner;
+
+    // --- Constructor ---
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // --- Modifiers ---
+
+    modifier managerOnly() {
+        require(msg.sender == owner, "Only manager can withdraw funds.");
+        _;
+    }
+
+    // --- Functions ---
 
     function fund() public payable {
         require(
@@ -20,7 +38,7 @@ contract FundMe {
         addressToMoneyFunded[msg.sender] += msg.value;
     }
 
-    function withdraw() public payable {
+    function withdraw() public payable managerOnly {
         for (
             uint256 funderIndex = 0;
             funderIndex < funders.length;
