@@ -6,11 +6,8 @@ pragma solidity 0.8.16;
 error NotOwner();
 
 contract FundMeV2 {
-    // --- Constants ---
-
-    uint256 public constant MIN_VALUE = 1000 wei;
-
     // --- State variables ---
+    uint256 public constant MIN_VALUE = 1000 wei;
 
     address[] public funders;
     mapping(address => uint256) addressToMoneyFunded;
@@ -65,5 +62,13 @@ contract FundMeV2 {
             value: address(this).balance
         }("");
         require(isWithdrawalSuccess, "Withdrawal failed.");
+    }
+
+    receive() external payable {
+        fund();
+    }
+
+    fallback() external payable {
+        fund();
     }
 }

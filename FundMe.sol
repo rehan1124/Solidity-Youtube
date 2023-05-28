@@ -68,4 +68,12 @@ contract FundMe {
         }("");
         require(isWithdrawalSuccess, "Withdrawal failed.");
     }
+
+    receive() external payable {
+        fund();
+    }
+
+    fallback() external payable {
+        fund();
+    }
 }
