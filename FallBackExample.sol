@@ -7,4 +7,8 @@ contract FallBackExample {
     receive() external payable {
         result = 1;
     }
+
+    fallback() external payable {
+        result = 2;
+    }
 }
