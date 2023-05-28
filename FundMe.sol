@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-import "./PriceConverter.sol";
+import "contracts/PriceConverter.sol";
+
+error NotOwner();
 
 contract FundMe {
     // --- State variables ---
     using PriceConverter for uint256;
 
-    uint256 public minimumUsd = 0.05 * (10 ** 18);
+    uint256 public constant MIN_USD = 0.005 * (10 ** 18);
 
     address[] public funders;
     mapping(address => uint256) addressToMoneyFunded;
 
-    address public owner;
+    address public immutable owner;
 
     // --- Constructor ---
 
@@ -23,7 +25,10 @@ contract FundMe {
     // --- Modifiers ---
 
     modifier managerOnly() {
-        require(msg.sender == owner, "Only manager can withdraw funds.");
+        // require(msg.sender == owner, "Only manager can withdraw funds.");
+        if (msg.sender != owner) {
+            revert NotOwner();
+        }
         _;
     }
 
@@ -31,7 +36,7 @@ contract FundMe {
 
     function fund() public payable {
         require(
-            msg.value.getConversionRate() >= minimumUsd,
+            msg.value.getConversionRate() >= MIN_USD,
             "Minimum 50 USD is required."
         );
         funders.push(msg.sender);
@@ -54,8 +59,8 @@ contract FundMe {
         // payable(msg.sender).transfer(address(this).balance);
 
         // Using send()
-        bool sendStatus = payable(msg.sender).send(address(this).balance);
-        require(sendStatus, "Withdrawal failed.");
+        // bool sendStatus = payable(msg.sender).send(address(this).balance);
+        // require(sendStatus, "Withdrawal failed.");
 
         // Using call()
         (bool isWithdrawalSuccess, ) = payable(msg.sender).call{

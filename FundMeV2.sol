@@ -1,14 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
+// Gas used: 590769 > 567190 > 541930
+
+error NotOwner();
+
 contract FundMeV2 {
+    // --- Constants ---
+
+    uint256 public constant MIN_VALUE = 1000 wei;
+
     // --- State variables ---
-    uint256 public minimumValue = 1000 wei;
 
     address[] public funders;
     mapping(address => uint256) addressToMoneyFunded;
 
-    address public owner;
+    address public immutable owner;
 
     // --- Constructor ---
 
@@ -19,14 +26,17 @@ contract FundMeV2 {
     // --- Modifiers ---
 
     modifier managerOnly() {
-        require(msg.sender == owner, "Only manager can withdraw funds.");
+        // require(msg.sender == owner, "Only manager can withdraw funds.");
+        if (msg.sender != owner) {
+            revert NotOwner();
+        }
         _;
     }
 
     // --- Functions ---
 
     function fund() public payable {
-        require(msg.value >= minimumValue, "Minimum 1000 wei is required.");
+        require(msg.value >= MIN_VALUE, "Minimum 1000 wei is required.");
         funders.push(msg.sender);
         addressToMoneyFunded[msg.sender] += msg.value;
     }
@@ -47,8 +57,8 @@ contract FundMeV2 {
         // payable(msg.sender).transfer(address(this).balance);
 
         // Using send()
-        bool sendStatus = payable(msg.sender).send(address(this).balance);
-        require(sendStatus, "Withdrawal failed.");
+        // bool sendStatus = payable(msg.sender).send(address(this).balance);
+        // require(sendStatus, "Withdrawal failed.");
 
         // Using call()
         (bool isWithdrawalSuccess, ) = payable(msg.sender).call{
